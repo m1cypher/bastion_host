@@ -1,0 +1,35 @@
+### Add to the top of ~/.bashrc
+
+Host1="192.168.0.5"
+Host2="192.168.0.99"
+Host3="192.168.0.100"
+
+
+
+echo "Welcome to the SSH menu!"
+echo "Select an option:"
+echo "1. SSH to $Host1"
+echo "2. SSH to Host 2"
+echo "3. SSH to Host 3"
+
+read -p "Enter the option number: " option
+
+CURRENT_USER=$USER
+
+case $option in
+    1)
+        ssh $CURRENT_USER@host1
+        ;;
+    2)
+        ssh $CURRENT_USER@host2
+        ;;
+    3)
+        ssh $CURRENT_USER@host3
+        ;;
+    666)
+        sudo -i
+        ;;
+    *)
+        echo "Invalid option. Exiting."
+        ;;
+esac
