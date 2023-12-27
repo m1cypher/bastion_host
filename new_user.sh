@@ -41,7 +41,7 @@ echo "auth required pam_permit.so" >> /etc/pam.d/sshd
 # Changes SSH acceptance methods to be PublicKey, MFA
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
 sed -i 's/^ChallengeResponseAuthentication.*/ChallengeResponseAuthentication yes' /etc/ssh/sshd_config
-echo "AuthenticationMethods publickey,password publickey,keyboard-interactive" >> /etc/ssh/sshd_config
+echo "AuthenticationMethods password publickey,keyboard-interactive" >> /etc/ssh/sshd_config
 # Stops password only logins
 sed -i 's/^@include common-auth/#&/' /etc/pam.d/sshd
 
