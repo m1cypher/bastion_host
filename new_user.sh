@@ -6,11 +6,6 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Check if username and password are provided as arguments
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <username> <password>"
-    exit 1
-fi
 
 # Assign username and password from command line arguments
 read -p 'What username do you want to login with and restrict SSH to? ' USERNAME
