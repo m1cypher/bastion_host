@@ -14,8 +14,9 @@ read -p 'What username do you want to login with and restrict SSH to? ' USERNAME
 adduser $USERNAME
 
 # Print a message indicating success
-echo "User '$USERNAME' created with the specified password."
+echo "User '$USERNAME' created with the specified password. Switching terminal to $USERNAME"
 
+su - $USERNAME
 
 # PAM Installation (REQUIRES SMART PHONE) Thank you Digital Ocean for the Walk Through
 # https://www.digitalocean.com/community/tutorials/how-to-set-up-multi-factor-authentication-for-ssh-on-ubuntu-20-04
