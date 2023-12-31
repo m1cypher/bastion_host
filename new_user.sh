@@ -31,7 +31,7 @@ read -p 'What do you want the password to be? ' PASSWORD
 
 
 # Create a new user
-useradd -m $USERNAME
+useradd -m -s /bin/bash $USERNAME
 
 passwd $USERNAME $PASSWORD
 
