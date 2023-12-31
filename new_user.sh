@@ -29,12 +29,12 @@ read -p 'What do you want the password to be? ' PASSWORD
 #### [FEAUTRE] ####
 
 
-# Create a new user
+#### [SECTION] Create a new user ####
 useradd -m -s /bin/bash $USERNAME
 
 echo "$USERNAME:$PASSWORD" | chpasswd
 
-# Print a message indicating success
+#### Print a message indicating success
 echo "User '$USERNAME' created with the specified password. Adding user to Sudo group."
 
 usermod -aG sudo $USERNAME
@@ -49,27 +49,32 @@ echo "Switching terminal to $USERNAME"
 
 su - $USERNAME
 
-# PAM Installation (REQUIRES SMART PHONE) Thank you Digital Ocean for the Walk Through
-# https://www.digitalocean.com/community/tutorials/how-to-set-up-multi-factor-authentication-for-ssh-on-ubuntu-20-04
-# Installs Google PAM
+#### PAM Installation (REQUIRES SMART PHONE) Thank you Digital Ocean for the Walk Through
+#### https://www.digitalocean.com/community/tutorials/how-to-set-up-multi-factor-authentication-for-ssh-on-ubuntu-20-04
+#### [SECTION] Installs Google PAM ####
 sudo apt-get update
 sudo apt-get install libpam-google-authenticator -y
 
-# Runs Google PAM setup with TOTP (-t), disallowed reuses of TOTP (-d), and rate limited logins for 3 every 30 seconds (-r 3, -R 30)
-google-authenticator -t -d -r 3 -R 30
+##### Runs Google PAM setup with TOTP (-t), disallowed reuses of TOTP (-d), rate limited logins for 3 every 30 seconds (-r 3, -R 30), and disable the questions being asked (-W)
+google-authenticator -t -d -r 3 -R 30 -W 
 
 #### YOU WILL HAVE TO SAY "Y" to the last section to ensure you copy commands to profile. This also forces you to scan the QR code to your authenticator ####
+#### SAVE EMERGENCY CODES ###
 
-# Adds requires authentication items to SSH
+echo "Did you save your ememergency codes?" 
+
+sleep 5
+
+##### Adds requires authentication items to SSH
 sudo cp /etc/pam.d/sshd /etc/pam.d/sshd.bak
-echo "auth required pam_google_authenticator.so nullok" >> /etc/pam.d/sshd 
+echo "auth required pam_google_authenticator.so" >> /etc/pam.d/sshd 
 echo "auth required pam_permit.so" >> /etc/pam.d/sshd
 
-# Changes SSH acceptance methods to be PublicKey, MFA
+##### Changes SSH acceptance methods to be PublicKey, MFA
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
 sed -i 's/^ChallengeResponseAuthentication.*/ChallengeResponseAuthentication yes' /etc/ssh/sshd_config
-echo "AuthenticationMethods password publickey,keyboard-interactive" >> /etc/ssh/sshd_config
-# Stops password only logins
+echo "AuthenticationMethods publickey,password publickey,keyboard-interactive" >> /etc/ssh/sshd_config
+#### Stops password only logins
 sed -i 's/^@include common-auth/#&/' /etc/pam.d/sshd
 
 service ssh restart
@@ -77,38 +82,43 @@ service ssh restart
 echo "PAM configuration has been updated and the service restarted."
 
 
+#### [SECTION] publickey creation ####
+ssh-keygen -t rsa -b 2048
 
-# SSH LOCKDOWN for current Host
+# ssh-copy-id $USERNAME@your_server_ip
 
-# Backup the original sshd_config file
+#### [SECTION] SSH LOCKDOWN for current Host ####
+
+#### Backup the original sshd_config file
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
 
-# You may need to adjust these settings based on your requirements
-# Ensure the "ROOT" cannot SSH in
+#### You may need to adjust these settings based on your requirements
+### Ensure the "ROOT" cannot SSH in
 sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
-# Change to SSH Protocol 2
+### Change to SSH Protocol 2
 sed -i 's/^Protocol.*/Protocol 2/' /etc/ssh/sshd_config
-# Limits SSH Attempts
+### Limits SSH Attempts
 sed -i 's/^MaxAuthTries.*/MaxAuthTries 3/' /etc/ssh/sshd_config
-# Limits SSH timeout 
+### Limits SSH timeout 
 sed -i 's/^ClientAliveInterval.*/ClientAliveInterval 300/' /etc/ssh/sshd_config
 sed -i 's/^ClientAliveCountMax.*/ClientAliveCountMax 2/' /etc/ssh/sshd_config
-# Stops empty password attempts
+### Stops empty password attempts
 sed -i 's/^PermitEmptyPasswords.*/PermitEmptyPasswords no/' /etc/ssh/sshd_config
-# Requires publickey would recommend this, but we achieve a different result with PAM
+### Requires publickey would recommend this, but we achieve a different result with PAM
 # sed -i 's/^PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-# Sets password authentication that will be MFA enforced with PAM
+### Sets password authentication that will be MFA enforced with PAM
 sed -i 's/^PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-# Restricts SSH to ONLY one user, the user created above
+### Restricts SSH to ONLY one user, the user created above
 sed -i "s/^AllowUsers.*/AllowUsers $USERNAME/" /etc/ssh/sshd_config
-# Use this if you want to create a group that is allowed
+### Use this if you want to create a group that is allowed
 # sed -i 's/^AllowGroups.*/AllowGroups groupname/' /etc/ssh/sshd_config
-# Changes the SSH Port. 
-# sed -i 's/^Port.*/Port 2222/' /etc/ssh/sshd_config  # Change the port to a non-standard value
-# Stops remote applications running via SSH connections
+### Changes the SSH Port. Generally, I am against this as it really doesn't serve a purpose sense a targeted scan would still be able to find OpenSSH.
+### However, automated bots do just hammer port 22 so changing it to something different isn't a bad idea.
+# sed -i 's/^Port.*/Port 30022/' /etc/ssh/sshd_config  # Change the port to a non-standard value
+### Stops remote applications running via SSH connections
 sed -i 's/^X11Forwarding.*/X11Forwarding no/' /etc/ssh/sshd_config
 
-# Restart SSH service to apply changes
+### Restart SSH service to apply changes
 service ssh restart
 
 echo "SSH configuration has been updated and the service restarted."
