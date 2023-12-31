@@ -25,7 +25,6 @@ read -p 'What do you want the password to be? ' PASSWORD
 # PASSWORD=$2
 
 # Set the password for the new user
-# echo "$USERNAME:$PASSWORD" | chpasswd
 
 #### [FEAUTRE] ####
 
@@ -33,12 +32,12 @@ read -p 'What do you want the password to be? ' PASSWORD
 # Create a new user
 useradd -m -s /bin/bash $USERNAME
 
-passwd $USERNAME $PASSWORD
+echo "$USERNAME:$PASSWORD" | chpasswd
 
 # Print a message indicating success
 echo "User '$USERNAME' created with the specified password. Adding user to Sudo group."
 
-usermod -aG $USERNAME sudo
+usermod -aG sudo $USERNAME
 
 echo "Check to make sure that '$USERNAME' is part of the sudo group."
 
