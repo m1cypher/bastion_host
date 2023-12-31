@@ -139,6 +139,8 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 - [ ] Add Auditing
 - [ ] Export of Auditing Logs
+- [ ] Bruteforce auto ban (DenyHost or Fail2Ban)
+- [ ] PortKnocking Option
 
 See the [open issues](https://github.com/m1cypher/bastion_host/issues) for a full list of proposed features (and known issues).
 
