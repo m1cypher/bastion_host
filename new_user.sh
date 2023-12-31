@@ -10,11 +10,43 @@ fi
 # Assign username and password from command line arguments
 read -p 'What username do you want to login with and restrict SSH to? ' USERNAME
 
+read -p 'What do you want the password to be? ' PASSWORD
+
+
+###### [FEATURE] Allow for an option to skip the question with arguments rather than questions above ####
+# Check if username and password are provided as arguments
+# if [ "$#" -ne 2 ]; then
+#     echo "Usage: $0 <username> <password>"
+#     exit 1
+# fi
+
+# # Assign username and password from command line arguments
+# USERNAME=$1
+# PASSWORD=$2
+
+# Set the password for the new user
+# echo "$USERNAME:$PASSWORD" | chpasswd
+
+#### [FEAUTRE] ####
+
+
 # Create a new user
-adduser $USERNAME
+useradd -m $USERNAME
+
+passwd $USERNAME $PASSWORD
 
 # Print a message indicating success
-echo "User '$USERNAME' created with the specified password. Switching terminal to $USERNAME"
+echo "User '$USERNAME' created with the specified password. Adding user to Sudo group."
+
+usermod -aG $USERNAME sudo
+
+echo "Check to make sure that '$USERNAME' is part of the sudo group."
+
+id odin
+
+sleep 5
+
+echo "Switching terminal to $USERNAME"
 
 su - $USERNAME
 
