@@ -1,0 +1,9 @@
+#### SSH Menu ####
+
+
+# You should rename the "Host" with the name of the server and then the [user]@[host1]. I.e 1. Unraid 1: ssh cypher@192.168.0.244. 
+# You can also change the Superuser access number, but will need to change the 
+1:Host 1:ssh user@host1
+2:Host 2:ssh user@host2
+3:Host 3:ssh user@host3
+666:Superuser Access:sudo -i
