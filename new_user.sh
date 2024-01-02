@@ -65,6 +65,11 @@ echo "Did you save your ememergency codes?"
 
 sleep 5
 
+#### [SECTION] publickey creation ####
+ssh-keygen -t rsa -b 2048 -f ~/.ssh/bastion_key
+
+
+
 ##### Adds requires authentication items to SSH
 sudo cp /etc/pam.d/sshd /etc/pam.d/sshd.bak
 echo "auth required pam_google_authenticator.so" >> /etc/pam.d/sshd 
@@ -82,12 +87,8 @@ service ssh restart
 echo "PAM configuration has been updated and the service restarted."
 
 
-#### [SECTION] publickey creation ####
-ssh-keygen -t rsa -b 2048
 
-# ssh-copy-id $USERNAME@your_server_ip
-
-#### [SECTION] SSH LOCKDOWN for current Host ####
+#### [SECTION] SSH LOCKDOWN for Bastion Host ####
 
 #### Backup the original sshd_config file
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
@@ -104,13 +105,13 @@ sed -i 's/^ClientAliveInterval.*/ClientAliveInterval 300/' /etc/ssh/sshd_config
 sed -i 's/^ClientAliveCountMax.*/ClientAliveCountMax 2/' /etc/ssh/sshd_config
 ### Stops empty password attempts
 sed -i 's/^PermitEmptyPasswords.*/PermitEmptyPasswords no/' /etc/ssh/sshd_config
-### Requires publickey would recommend this, but we achieve a different result with PAM
+### Requires publickey would recommend this, but we achieve a different result with PAM.
 # sed -i 's/^PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-### Sets password authentication that will be MFA enforced with PAM
-sed -i 's/^PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+### Sets password authentication, but we achieve a different result with PAM "AuthenticationMethods".
+# sed -i 's/^PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
 ### Restricts SSH to ONLY one user, the user created above
 sed -i "s/^AllowUsers.*/AllowUsers $USERNAME/" /etc/ssh/sshd_config
-### Use this if you want to create a group that is allowed
+### Use this if you want to create a group that is allowed rather than the individual user like above.
 # sed -i 's/^AllowGroups.*/AllowGroups groupname/' /etc/ssh/sshd_config
 ### Changes the SSH Port. Generally, I am against this as it really doesn't serve a purpose sense a targeted scan would still be able to find OpenSSH.
 ### However, automated bots do just hammer port 22 so changing it to something different isn't a bad idea.
@@ -122,3 +123,24 @@ sed -i 's/^X11Forwarding.*/X11Forwarding no/' /etc/ssh/sshd_config
 service ssh restart
 
 echo "SSH configuration has been updated and the service restarted."
+
+
+#### [SECTION] SSH PubKey Copy ####
+
+MENU_FILE="./sshhost_menu.txt"
+
+PUBLIC_KEY_FILE="~/.ssh/bastion_key.pub"
+
+declare -A menu_options
+while IFS=':' read -r key label command; do
+    menu_options["$key"]="$label:$command"
+done < "$MENU_FILE"
+
+for key in "${!menu_options[@]}"; do
+    # Extract host from ssh command
+    host_ssh_command=${menu_options[$key]#*:}
+    host=${host_ssh_command##*@}
+
+    # Add public key to authorized_keys for the host
+    ssh-copy-id -i "$PUBLIC_KEY_FILE" "$host"
+done
