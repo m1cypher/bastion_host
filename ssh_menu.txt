@@ -1,35 +1,47 @@
-### Add to the top of ~/.bashrc
-
-Host1="192.168.0.5"
-Host2="192.168.0.99"
-Host3="192.168.0.100"
+#### SSH MENU for bottom of .bashrc ####
 
 
+# Variable locations
+MENU_FILE="./sshhost_menu.txt"
 
-echo "Welcome to the SSH menu!"
-echo "Select an option:"
-echo "1. SSH to $Host1"
-echo "2. SSH to Host 2"
-echo "3. SSH to Host 3"
+PUBLIC_KEY_FILE="~/.ssh/bastion_key.pub"
 
-read -p "Enter the option number: " option
+# Define an associative array for menu options (host_number: host_ssh_command)
+declare -A menu_options
+while IFS=':' read -r key label command; do
+    menu_options["$key"]="$label:$command"
+done < "$MENU_FILE"
 
-CURRENT_USER=$USER
+# Display the menu
+function show_menu {
+    echo "SSH Menu Options:"
+    for key in "${!menu_options[@]}"; do
+        # Hide option "Superuser" from the displayed menu
+        if [[ "$key" != "666" ]]; then
+            echo "$key. ${menu_options[$key]%%:*}"
+        fi
+    done
+}
 
-case $option in
-    1)
-        ssh $CURRENT_USER@host1
-        ;;
-    2)
-        ssh $CURRENT_USER@host2
-        ;;
-    3)
-        ssh $CURRENT_USER@host3
-        ;;
-    666)
-        sudo -i
-        ;;
-    *)
+# Prompt for user input
+function menu_prompt {
+    read -p "Enter the option number: " option
+}
+
+# Main function to execute the selected option
+function execute_option {
+    if [[ -n "${menu_options[$option]}" ]]; then
+        eval "${menu_options[$option]#*:}"
+    else
         echo "Invalid option. Exiting."
-        ;;
-esac
+    fi
+}
+
+# Show the menu
+show_menu
+
+# Prompt for user input
+menu_prompt
+
+# Execute the selected option
+execute_option
