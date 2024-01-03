@@ -49,4 +49,6 @@ echo "Switching terminal to $USERNAME"
 
 cp ./ssh_lockdown_local.sh /home/$USERNAME
 
-su - $USERNAME -c "sudo chmod +x /home/$USERNAME/ssh_lockdown_local.sh && sudo ./ssh_lockdown_local.sh"
+chmod +x /home/$USERNAME/ssh_lockdown_local.sh
+
+su - $USERNAME -c "sudo -S $PASSWORD ./ssh_lockdown_local.sh"
