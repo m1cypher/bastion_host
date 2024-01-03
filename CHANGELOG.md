@@ -1,10 +1,21 @@
 # Changelog
 
 
+## v0.6.0
+
+### Added or Changed
+# ssh_lockdown_local.sh
+- Created new file
+- Added the following sections from 'new_user.sh': PAM, SSH Keygen, SSH Copy, SSH Menu, SSH Config
+
+### Removed
+# new_user.sh
+- Removed the following sections PAM, SSH Keygen, SSH Copy, SSH Menu, SSH Config
+
 ## v0.5.1
 
 ### Changed
-- Corrected user switch and rest of thes script execution.
+- Corrected user switch and rest of thes script execution. #Original option did work due to multiple " ' " marks
 
 
 ## v0.5.0
