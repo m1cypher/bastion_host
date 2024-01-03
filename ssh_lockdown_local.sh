@@ -1,12 +1,5 @@
 #!/bin/bash
 
-
-# Check if the script is run as root
-if [ "$EUID" -ne 0 ]; then
-    echo "Please run as root or using sudo."
-    exit 1
-fi
-
 #### PAM Installation (REQUIRES SMART PHONE) Thank you Digital Ocean for the Walk Through
 #### https://www.digitalocean.com/community/tutorials/how-to-set-up-multi-factor-authentication-for-ssh-on-ubuntu-20-04
 #### [SECTION] Installs Google PAM ####
