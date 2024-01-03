@@ -1,5 +1,8 @@
 #### SSH MENU for bottom of .bashrc ####
 
+# Timestamp For bash history
+export HISTTIMEFORMAT="%F %T "
+
 
 # Variable locations
 MENU_FILE="./sshhost_menu.txt"
