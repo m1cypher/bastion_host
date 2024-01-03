@@ -1,5 +1,12 @@
 # Changelog
 
+
+## v0.5.1
+
+### Changed
+- Corrected user switch and rest of thes script execution.
+
+
 ## v0.5.0
 
 ### Added or Changed
