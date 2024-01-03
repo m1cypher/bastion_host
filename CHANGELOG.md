@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v0.6.1
+
+### Removed
+# ssh_lockdown_local.sh
+- Removed sudo requirement from ssh_lockdown_local.sh
+
+# new_user.sh
+- removed sudo requirement for execution of final line
+
 ## v0.6.0
 
 ### Added or Changed
