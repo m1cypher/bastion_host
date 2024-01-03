@@ -45,7 +45,7 @@ echo "PAM configuration has been updated and the service restarted."
 read -p "Do you want to make the changes automatically? (yes/no): " mode
 
 # Backup the original sshd_config file
-cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
 
 # Function to confirm changes
 function confirm_change {
