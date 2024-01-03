@@ -47,7 +47,7 @@ sleep 5
 
 echo "Switching terminal to $USERNAME"
 
-su - $USERNAME
+su - $USERNAME -c '
 
 #### PAM Installation (REQUIRES SMART PHONE) Thank you Digital Ocean for the Walk Through
 #### https://www.digitalocean.com/community/tutorials/how-to-set-up-multi-factor-authentication-for-ssh-on-ubuntu-20-04
