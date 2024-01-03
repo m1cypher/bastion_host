@@ -51,4 +51,4 @@ cp ./ssh_lockdown_local.sh /home/$USERNAME
 
 chmod +x /home/$USERNAME/ssh_lockdown_local.sh
 
-su - $USERNAME -c "sudo -S ./ssh_lockdown_local.sh"
+su - $USERNAME -c "./ssh_lockdown_local.sh"
