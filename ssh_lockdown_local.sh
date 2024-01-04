@@ -6,6 +6,23 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+#### [SECTION] PAM Configurations ####
+### Adds requires authentication items to SSH
+cp /etc/pam.d/sshd /etc/pam.d/sshd.bak
+echo "auth required pam_google_authenticator.so" >> /etc/pam.d/sshd 
+echo "auth required pam_permit.so" >> /etc/pam.d/sshd
+
+### Changes SSH acceptance methods to be PublicKey, MFA
+cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+sed -i 's/^ChallengeResponseAuthentication.*/ChallengeResponseAuthentication yes' /etc/ssh/sshd_config
+echo "AuthenticationMethods publickey,password publickey,keyboard-interactive" >> /etc/ssh/sshd_config
+### Stops password only logins
+sed -i 's/^@include common-auth/#&/' /etc/pam.d/sshd
+
+service ssh restart
+
+echo "PAM configuration has been updated and the service restarted."
+
 #### [SECTION] SSH LOCKDOWN for Bastion Host ####
 
 # Prompt the user for the mode: automatic or interactive
