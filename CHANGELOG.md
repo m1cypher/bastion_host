@@ -5,7 +5,7 @@
 ### Added or Changed
 - Added ssh_pam_setup.sh
 # ssh_pam_setup.sh
-- Separated [SECTION]s pam setup, ssh keygen, and ssh-copy from "ssh_lockdown_local.sh" to have that section execute under sudo
+- Separated [SECTION]s ssh keygen and ssh-copy from "ssh_lockdown_local.sh" to have that section execute under sudo
 # new_user.sh
 - Added lines for moving and modification of ssh_pam_setup to $USERNAME
 - Added echo descriptor lines
@@ -13,7 +13,7 @@
 
 ### Removed
 # ssh_lockdown_local.sh
-- Removed [SECTION]s pam setup, ssh keygen, and ssh-copy
+- Removed [SECTION]s ssh keygen, and ssh-copy
 
 
 
