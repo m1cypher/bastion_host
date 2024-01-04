@@ -1,0 +1,77 @@
+#!/bin/bash
+
+#### PAM Installation (REQUIRES SMART PHONE) Thank you Digital Ocean for the Walk Through
+#### https://www.digitalocean.com/community/tutorials/how-to-set-up-multi-factor-authentication-for-ssh-on-ubuntu-20-04
+#### [SECTION] Installs Google PAM ####
+sudo apt-get update
+sudo apt-get install libpam-google-authenticator -y
+
+##### Runs Google PAM setup with TOTP (-t), disallowed reuses of TOTP (-d), rate limited logins for 3 every 30 seconds (-r 3, -R 30), and disable the questions being asked (-W)
+google-authenticator -t -d -r 3 -R 30 -W 
+
+#### YOU WILL HAVE TO SAY "Y" to the last section to ensure you copy commands to profile. This also forces you to scan the QR code to your authenticator ####
+#### SAVE EMERGENCY CODES ###
+
+echo "Did you save your ememergency codes?" 
+
+sleep 5
+
+
+
+#### [SECTION] publickey creation ####
+ssh-keygen -t rsa -b 2048 -f ~/.ssh/bastion_key
+
+
+#### [SECTION] PAM Configurations ####
+### Adds requires authentication items to SSH
+cp /etc/pam.d/sshd /etc/pam.d/sshd.bak
+echo "auth required pam_google_authenticator.so" >> /etc/pam.d/sshd 
+echo "auth required pam_permit.so" >> /etc/pam.d/sshd
+
+### Changes SSH acceptance methods to be PublicKey, MFA
+cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+sed -i 's/^ChallengeResponseAuthentication.*/ChallengeResponseAuthentication yes' /etc/ssh/sshd_config
+echo "AuthenticationMethods publickey,password publickey,keyboard-interactive" >> /etc/ssh/sshd_config
+### Stops password only logins
+sed -i 's/^@include common-auth/#&/' /etc/pam.d/sshd
+
+service ssh restart
+
+echo "PAM configuration has been updated and the service restarted."
+
+
+#### [SECTION] Execution of ssh_lockdown_local ####
+
+sudo -S ./ssh_lockdown_local.sh
+
+
+#### [SECTION] SSH PubKey Copy ####
+
+read -p "Is the menu ready? (yes/no): " menu_ready
+
+if [[ $menu_ready != "yes" ]]; then
+    echo "Menu is not ready. Exiting."
+    exit 1
+fi
+
+MENU_FILE="./sshhost_menu.txt"
+
+PUBLIC_KEY_FILE="~/.ssh/bastion_key.pub"
+
+declare -A menu_options
+while IFS=':' read -r key label command; do
+    menu_options["$key"]="$label:$command"
+done < "$MENU_FILE"
+
+for key in "${!menu_options[@]}"; do
+    # Extract host from ssh command
+    host_ssh_command=${menu_options[$key]#*:}
+    host=${host_ssh_command##*@}
+
+    # Add public key to authorized_keys for the host
+    ssh-copy-id -i "$PUBLIC_KEY_FILE" "$host"
+done
+
+
+#### [SECTION] New User SSH Menu ####
+cat ./ssh_menu.txt >> .bashrc
