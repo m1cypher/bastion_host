@@ -24,7 +24,7 @@ ssh-keygen -t rsa -b 2048 -f ~/.ssh/bastion_key
 
 
 ##### Adds requires authentication items to SSH
-sudo - S cp /etc/pam.d/sshd /etc/pam.d/sshd.bak
+sudo -S cp /etc/pam.d/sshd /etc/pam.d/sshd.bak
 sudo echo "auth required pam_google_authenticator.so" >> /etc/pam.d/sshd 
 sudo echo "auth required pam_permit.so" >> /etc/pam.d/sshd
 
