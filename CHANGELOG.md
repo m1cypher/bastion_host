@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.6.3
+### Changed
+# ssh_lockdown_local.sh
+- Adjust sshd_config changes to be release agnostic. i.e. works whether you use 20.04 ubuntu or 22.04. These 2 versions have different sshd_config defaults.
+
 
 ## v0.6.2
 ### Added or Changed

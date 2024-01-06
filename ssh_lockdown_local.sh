@@ -9,17 +9,20 @@ fi
 #### [SECTION] PAM Configurations ####
 ### Adds requires authentication items to SSH
 cp /etc/pam.d/sshd /etc/pam.d/sshd.bak
-echo "auth required pam_google_authenticator.so" >> /etc/pam.d/sshd 
+# nullok at the end of the first line, make sure the users who yet haven’t registered for 2FA can use the sudo as they were doing. 
+# If you remove this line, all users need to enter a 2FA code to access sudo.
+echo "auth required pam_google_authenticator.so" nullok >> /etc/pam.d/common-auth
+echo "auth required pam_permit.so" >> /etc/pam.d/common-auth
 echo "auth required pam_permit.so" >> /etc/pam.d/sshd
 
 ### Changes SSH acceptance methods to be PublicKey, MFA
-cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
-sed -i 's/^ChallengeResponseAuthentication.*/ChallengeResponseAuthentication yes' /etc/ssh/sshd_config
+cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak1
+sed -i 's/^KbdInteractiveAuthentication.*/KbdInteractiveAuthentication yes' /etc/ssh/sshd_config
 echo "AuthenticationMethods publickey,password publickey,keyboard-interactive" >> /etc/ssh/sshd_config
 ### Stops password only logins
 sed -i 's/^@include common-auth/#&/' /etc/pam.d/sshd
 
-service ssh restart
+systemctl restart sshd
 
 echo "PAM configuration has been updated and the service restarted."
 
@@ -29,7 +32,7 @@ echo "PAM configuration has been updated and the service restarted."
 read -p "Do you want to make the changes automatically? (yes/no): " mode
 
 # Backup the original sshd_config file
-sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak2
 
 # Function to confirm changes
 function confirm_change {
@@ -45,9 +48,9 @@ function apply_interactively {
     echo "Please enter the new value for each setting (options/suggestions in parenthases) or leave blank to skip."
 
     # Modify PermitRootLogin
-    read -p "PermitRootLogin (yes/no): " new_value
+    read -p "PermitRootLogin (no): " new_value
     if [ -n "$new_value" ]; then
-        sed -i "s/^PermitRootLogin.*/PermitRootLogin $new_value/" /etc/ssh/sshd_config
+        sed -i "s/#PermitRootLogin.*/PermitRootLogin $new_value/" /etc/ssh/sshd_config
         confirm_change
     fi
 
@@ -61,7 +64,7 @@ function apply_interactively {
         # Modify MaxAuthTries
     read -p "MaxAuthTries (3): " new_value
     if [ -n "$new_value" ]; then
-        sed -i "s/^MaxAuthTries.*/MaxAuthTries $new_value/" /etc/ssh/sshd_config
+        sed -i "s/#MaxAuthTries 6/MaxAuthTries $new_value/" /etc/ssh/sshd_config
         confirm_change
     fi
 
@@ -137,7 +140,7 @@ function apply_interactively {
     fi
 
     # Restart SSH service to apply changes
-    service ssh restart
+    systemctl restart sshd
 
     echo "SSH configuration has been updated and the service restarted."
     exit 0
@@ -172,7 +175,7 @@ function apply_automatically {
 
 
     # Restart SSH service to apply changes
-    service ssh restart
+    systemctl restart sshd
 
     echo "SSH configuration has been updated and the service restarted."
     exit 0
