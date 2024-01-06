@@ -1,5 +1,18 @@
 # Changelog
 
+
+## v0.6.5
+### Changed
+# ssh_lockdown_local.sh
+- Added function to make changes to sshd_config more seamless between versions.
+- Added function for each version 22.04 and 20.04 to ensure that PAM configurations were accurate.
+- Restructed code to better fit above changes.
+
+### Removed
+# ssh_lockdown_local.sh
+- Removed confirm changed function as it was just too cumbersome
+
+
 ## v0.6.3
 ### Changed
 # ssh_lockdown_local.sh
