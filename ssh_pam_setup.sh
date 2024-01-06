@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#### PAM Installation (REQUIRES SMART PHONE) Thank you Digital Ocean for the Walk Through
-#### https://www.digitalocean.com/community/tutorials/how-to-set-up-multi-factor-authentication-for-ssh-on-ubuntu-20-04
+#### PAM Installation (REQUIRES SMART PHONE)
 #### [SECTION] Installs Google PAM ####
 sudo apt-get update
 sudo apt-get install libpam-google-authenticator -y
