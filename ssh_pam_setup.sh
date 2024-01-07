@@ -36,20 +36,41 @@ fi
 
 MENU_FILE="./sshhost_menu.txt"
 
-PUBLIC_KEY_FILE="~/.ssh/bastion_key.pub"
+PUBLIC_KEY_FILE="/home/$USER/.ssh/bastion_key.pub"
 
-declare -A menu_options
 while IFS=':' read -r key label command; do
+    # Skipping commented lines
+    [[ $key =~ ^[[:space:]]*# ]] && continue
+    # Skip empty lines
+    [[ -z $key || -z $label || -z $command ]] && continue
+
+
     menu_options["$key"]="$label:$command"
 done < "$MENU_FILE"
 
+for key in "${!menu_options[@]}"; do
+    [[ $key =~ ^[[:space:]]*# ]] && continue
+
+    # Extract host from ssh command
+    host_ssh_command=${menu_options[$key]#*:}
+    IFS=' ' read -ra host_ssh_command_array <<< "$host_ssh_command"
+    host=${host_ssh_command##*@}
+
+    # Debugging: Print information for each iteration
+    echo "Processing key: $key, Host: $host, Command: ${menu_options[$key]}"
+
+    # Add public key to authorized_keys for the host
+    ssh-copy-id -i "$PUBLIC_KEY_FILE" "$host"
+done
+
+#### [SECTION] Remote Host SSH Lockdown
 for key in "${!menu_options[@]}"; do
     # Extract host from ssh command
     host_ssh_command=${menu_options[$key]#*:}
     host=${host_ssh_command##*@}
 
     # Add public key to authorized_keys for the host
-    ssh-copy-id -i "$PUBLIC_KEY_FILE" "$host"
+    $host 'bash -s' < ssh_lockdown_remote.sh
 done
 
 
