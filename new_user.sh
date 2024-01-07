@@ -48,13 +48,13 @@ sleep 5
 echo "Moving ssh_lockdown_local.sh and ssh_pam_setup.sh to /home/$USERNAME."
 
 cp ./ssh_lockdown_local.sh /home/$USERNAME
-
+cp ./ssh_lockdown_remote.sh /home/$USERNAME
 cp ./ssh_pam_setup.sh /home/$USERNAME
 
 echo "Changing permissions on ssh_lockdown_local.sh and ssh_pam_setup.sh."
 
 chmod +x /home/$USERNAME/ssh_lockdown_local.sh
-
+chmod +x /home/$USERNAME/ssh_lockdown_remote.sh
 chmod +x /home/$USERNAME/ssh_pam_setup.sh
 
 echo "Switching terminal to $USERNAME"
