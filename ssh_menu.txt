@@ -10,41 +10,60 @@ MENU_FILE="./sshhost_menu.txt"
 PUBLIC_KEY_FILE="~/.ssh/bastion_key.pub"
 
 # Define an associative array for menu options (host_number: host_ssh_command)
-declare -A menu_options
-while IFS=':' read -r key label command; do
-    menu_options["$key"]="$label:$command"
-done < "$MENU_FILE"
-
-# Display the menu
 function show_menu {
     echo "SSH Menu Options:"
-    for key in "${!menu_options[@]}"; do
+    while IFS=':' read -r key label command; do
+        # Skip commented lines
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+
         # Hide option "Superuser" from the displayed menu
         if [[ "$key" != "666" ]]; then
-            echo "$key. ${menu_options[$key]%%:*}"
+            echo "$key. $label"
         fi
-    done
+    done < "$MENU_FILE"
 }
 
-# Prompt for user input
+# Function to prompt for user input
 function menu_prompt {
     read -p "Enter the option number: " option
 }
 
-# Main function to execute the selected option
-function execute_option {
-    if [[ -n "${menu_options[$option]}" ]]; then
-        eval "${menu_options[$option]#*:}"
-    else
-        echo "Invalid option. Exiting."
-    fi
+# Function to check if the input is valid
+function is_valid_option {
+    # Check if the option is a number and not a commented line
+    [[ "$option" =~ ^[0-9]+ && -n "${menu_options[$option]}" && ! "${menu_options[$option]}" =~ ^[[:space:]]*# ]]
 }
 
-# Show the menu
-show_menu
+# Function to handle interrupt signal
+function handle_interrupt {
+    echo "Script interrupted. Please use the menu to exit."
+}
 
-# Prompt for user input
-menu_prompt
+# Trap the interrupt signal (Ctrl+C)
+trap handle_interrupt SIGINT
 
-# Execute the selected option
-execute_option
+# Main loop
+while true; do
+    # Display the menu
+    show_menu
+
+    # Prompt for user input
+    menu_prompt
+
+    # Read the menu options again to refresh the array
+    declare -A menu_options
+    while IFS=':' read -r key label command; do
+        menu_options["$key"]="$label:$command"
+    done < "$MENU_FILE"
+
+    # Execute the selected option if valid, otherwise display an error
+    if is_valid_option; then
+        # Extract the host information from the menu option
+        host_ssh_command=${menu_options[$option]#*:}
+        # Execute the SSH command
+        eval "$host_ssh_command"
+        break  # Exit the loop if a valid option was selected
+    else
+        echo "Invalid option. Please try again."
+    fi
+done
