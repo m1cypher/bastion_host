@@ -45,22 +45,30 @@ while IFS=':' read -r key label command; do
     [[ -z $key || -z $label || -z $command ]] && continue
 
 
+while IFS=':' read -r key label command; do
     menu_options["$key"]="$label:$command"
 done < "$MENU_FILE"
 
 for key in "${!menu_options[@]}"; do
     [[ $key =~ ^[[:space:]]*# ]] && continue
 
-    # Extract host from ssh command
+    # Extract host information from the menu option
     host_ssh_command=${menu_options[$key]#*:}
     IFS=' ' read -ra host_ssh_command_array <<< "$host_ssh_command"
-    host=${host_ssh_command##*@}
+    
+    # Check if host_ssh_command_array has at least two elements
+    if [[ ${#host_ssh_command_array[@]} -ge 2 ]]; then
+        # Extract host from the array
+        host=${host_ssh_command_array[1]}
+        
+        # Debugging: Print information for each iteration
+        echo "Processing key: $key, Host: $host, Command: ${menu_options[$key]}"
 
-    # Debugging: Print information for each iteration
-    echo "Processing key: $key, Host: $host, Command: ${menu_options[$key]}"
-
-    # Add public key to authorized_keys for the host
-    ssh-copy-id -i "$PUBLIC_KEY_FILE" "$host"
+        # Add public key to authorized_keys for the host
+        ssh-copy-id -i "$PUBLIC_KEY_FILE" "$host"
+    else
+        echo "Invalid menu format. Skipping key: $key"
+    fi
 done
 
 #### [SECTION] Remote Host SSH Lockdown
