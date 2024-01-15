@@ -4,45 +4,48 @@
 export HISTTIMEFORMAT="%F %T "
 
 
-# Variable locations
-MENU_FILE="./sshhost_menu.txt"
-
+# Variables
+MENU_FILE="sshhost_menu.yaml"
 PUBLIC_KEY_FILE="~/.ssh/bastion_key.pub"
 
-# Define an associative array for menu options (host_number: host_ssh_command)
 function show_menu {
     echo "SSH Menu Options:"
-    while IFS=':' read -r key label command; do
-        # Skip commented lines
-        [[ $key =~ ^[[:space:]]*# ]] && continue
+    while IFS='' read -r line || [[ -n "$line" ]]; do
+        # Skip empty lines
+        [[ -z "$line" ]] && continue
 
-        # Hide option "Superuser" from the displayed menu
-        if [[ "$key" != "666" ]]; then
-            echo "$key. $label"
+        # Skip lines starting with '#' (comments)
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+
+        # Check if the line denotes a category
+        if [[ "$line" =~ ^\[([^]]+)\]$ ]]; then
+            category="${BASH_REMATCH[1]}"
+            echo -e "\n$category:"
+        else
+            # Display host under the current category
+            echo "$line"
         fi
     done < "$MENU_FILE"
 }
 
-# Function to prompt for user input
+
 function menu_prompt {
     read -p "Enter the option number: " option
 }
 
-# Function to check if the input is valid
+
 function is_valid_option {
     # Check if the option is a number and not a commented line
-    [[ "$option" =~ ^[0-9]+ && -n "${menu_options[$option]}" && ! "${menu_options[$option]}" =~ ^[[:space:]]*# ]]
+    [[ "$option" =~ ^[0-9]+ && -n "${menu_options[$option]}" ]]
 }
 
-# Function to handle interrupt signal
+# Function to stop the breaking of the script
 function handle_interrupt {
     echo "Script interrupted. Please use the menu to exit."
 }
-
-# Trap the interrupt signal (Ctrl+C)
 trap handle_interrupt SIGINT
 
-# Main loop
+
 while true; do
     # Display the menu
     show_menu
@@ -52,17 +55,38 @@ while true; do
 
     # Read the menu options again to refresh the array
     declare -A menu_options
-    while IFS=':' read -r key label command; do
-        menu_options["$key"]="$label:$command"
+    while IFS='' read -r line || [[ -n "$line" ]]; do
+        # Skip empty lines
+        [[ -z "$line" ]] && continue
+
+        # Skip lines starting with '#' (comments)
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+
+        # Check if the line denotes a category
+        if [[ "$line" =~ ^\[([^]]+)\]$ ]]; then
+            category="${BASH_REMATCH[1]}"
+        else
+            # Add host under the current category to the options
+            menu_options["$line"]="$category:$line"
+        fi
     done < "$MENU_FILE"
 
     # Execute the selected option if valid, otherwise display an error
     if is_valid_option; then
         # Extract the host information from the menu option
-        host_ssh_command=${menu_options[$option]#*:}
+        host_info=${menu_options[$option]}
+        category=${host_info%%:*}
+        host=${host_info#*:}
+        # Check if the option is the secret menu item
+        if [[ "$option" == "666" ]]; then
+            execute_local_terminal
         # Execute the SSH command
-        eval "$host_ssh_command"
-        break  # Exit the loop if a valid option was selected
+        else
+            echo "Connecting to $host in category $category"
+            # You can replace the following line with your SSH command
+            # ssh "$host"
+            break  # Exit the loop if a valid option was selected
+        fi
     else
         echo "Invalid option. Please try again."
     fi
