@@ -43,6 +43,13 @@ function is_valid_option {
 function handle_interrupt {
     echo "Script interrupted. Please use the menu to exit."
 }
+
+function execute_local_terminal {
+    echo "Breaking into local terminal."
+    # You can add any commands needed for local terminal access here
+    break  # Exit the loop for local terminal access
+}
+
 trap handle_interrupt SIGINT
 
 
