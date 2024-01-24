@@ -1,5 +1,10 @@
 # Changelog
 
+# v0.6.7
+## Change
+
+- Renamed all files for better clarity 
+
 # v0.6.6
 ## Change
 
